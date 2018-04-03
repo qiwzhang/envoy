@@ -12,12 +12,14 @@ envoy_cc_library(
     name = "jwt_lib",
     srcs = [
         "jwks.cc",
+        "jwks_store.cc",
         "jwt.cc",
         "status.cc",
         "verifier.cc",
     ],
     hdrs = [
         "jwks.h",
+        "jwks_store.h",
         "jwt.h",
         "status.h",
         "utils.h",
@@ -30,5 +32,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//source/exe:envoy_common_lib",
+        "@envoy_api//envoy/config/filter/http/jwt_authn/v2alpha:jwt_authn_cc",
     ],
 )
