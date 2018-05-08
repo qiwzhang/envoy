@@ -12,11 +12,14 @@ envoy_cc_library(
     name = "jwt_lib",
     srcs = [
         "extractor.cc",
+        "jwks_store.cc",
     ],
     hdrs = [
         "extractor.h",
+        "jwks_store.h",
     ],
     external_deps = [
+        "jwt_verify",
         "rapidjson",
         "ssl",
     ],

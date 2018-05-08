@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "envoy/common/pure.h"
 #include "envoy/config/filter/http/jwt_authn/v2alpha/config.pb.h"
 
 #include "jwks.h"

@@ -1,10 +1,10 @@
+#include "extensions/filters/http/jwt_authn/jwks_store.h"
+
 #include <chrono>
 #include <unordered_map>
 
 #include "common/common/logger.h"
 #include "common/config/datasource.h"
-
-#include "extensions/filters/http/jwt_authn/extractor.h"
 
 using ::google::jwt_verify::Jwks;
 using ::google::jwt_verify::Status;
@@ -67,7 +67,7 @@ public:
       Status status = setKey(inline_jwks,
                              // inline jwks never expires.
                              std::chrono::steady_clock::time_point::max());
-      if (status != Status::OK) {
+      if (status != Status::Ok) {
         ENVOY_LOG(warn, "Invalid inline jwks for issuer: {}, jwks: {}", jwt_rule_.issuer(),
                   inline_jwks);
       }
@@ -95,7 +95,7 @@ public:
   bool isExpired() const override { return std::chrono::steady_clock::now() >= expiration_time_; }
 
   Status setRemoteJwks(const std::string& jwks_str) override {
-    return setKey(pubkey_str, getRemoteJwksExpirationTime());
+    return setKey(jwks_str, getRemoteJwksExpirationTime());
   }
 
 private:
@@ -115,12 +115,12 @@ private:
   // Set a Jwks as string.
   Status setKey(const std::string& jwks_str, std::chrono::steady_clock::time_point expire) {
     auto jwks_obj = Jwks::createFrom(jwks_str, Jwks::JWKS);
-    if (jwks_obj->getStatus() != Status::OK) {
+    if (jwks_obj->getStatus() != Status::Ok) {
       return jwks_obj->getStatus();
     }
     jwks_obj_ = std::move(jwks_obj);
     expiration_time_ = expire;
-    return Status::OK;
+    return Status::Ok;
   }
 
   // The jwt rule config.
@@ -128,7 +128,7 @@ private:
   // Use set for fast lookup
   std::set<std::string> audiences_;
   // The generated jwks object.
-  JwksPtr jwks_obj_;
+  ::google::jwt_verify::JwksPtr jwks_obj_;
   // The pubkey expiration time.
   std::chrono::steady_clock::time_point expiration_time_;
 };

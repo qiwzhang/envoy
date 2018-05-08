@@ -58,6 +58,11 @@ REPOSITORY_LOCATIONS = dict(
         commit = "d6f78d948c53f3b400bb46996eb3084359914f9b",
         remote = "https://github.com/google/googleapis",
     ),
+    com_github_google_jwt_verify = dict(
+        commit = "cbd9a95b0e1901f66b88f6d173caac0792eab264",
+        # TODO, switch to github.com/google/jwt_verify_lib
+        remote = "https://github.com/qiwzhang/jwt_verify_lib",
+    ),
     com_github_nodejs_http_parser = dict(
         commit = "54f55a2f02a823e5f5c87abe853bb76d1170718d",  # v2.8.1
         remote = "https://github.com/nodejs/http-parser",
