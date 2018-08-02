@@ -66,8 +66,7 @@ public:
 
     registerTestServerPorts({"http"});
 
-    client_ssl_ctx_ =
-        createClientSslTransportSocketFactory(false, false, context_manager_, secret_manager_);
+    client_ssl_ctx_ = createClientSslTransportSocketFactory(false, false, context_manager_);
   }
 
   void TearDown() override {
@@ -86,7 +85,6 @@ public:
 private:
   Runtime::MockLoader runtime_;
   Ssl::ContextManagerImpl context_manager_{runtime_};
-  Secret::MockSecretManager secret_manager_;
 
   Network::TransportSocketFactoryPtr client_ssl_ctx_;
 };
@@ -166,11 +164,13 @@ public:
     tls_certificate->mutable_private_key()->set_filename(
         TestEnvironment::runfilesPath("/test/config/integration/certs/serverkey.pem"));
 
-    Ssl::ServerContextConfigImpl cfg(tls_context, secret_manager_);
+    Secret::MockDynamicTlsCertificateSecretProviderFactory provider_factory;
+    auto cfg = std::make_unique<Ssl::ServerContextConfigImpl>(tls_context, secret_manager_,
+                                                              provider_factory);
 
     static Stats::Scope* upstream_stats_store = new Stats::TestIsolatedStoreImpl();
     return std::make_unique<Ssl::ServerSslSocketFactory>(
-        cfg, context_manager_, *upstream_stats_store, std::vector<std::string>{});
+        std::move(cfg), context_manager_, *upstream_stats_store, std::vector<std::string>{});
   }
 
 private:

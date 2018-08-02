@@ -60,9 +60,9 @@ createClientSslTransportSocketFactory(bool alpn, bool san, ContextManager& conte
   }
   Server::MockInstance server;
   Json::ObjectSharedPtr loader = TestEnvironment::jsonLoadFromString(target);
-  NiceMock<Init::MockManager> init_manager;
+  Secret::MockDynamicTlsCertificateSecretProviderFactory provider_factory;
   ClientContextConfigPtr cfg =
-      std::make_unique<ClientContextConfigImpl>(*loader, server.secretManager(), init_manager);
+      std::make_unique<ClientContextConfigImpl>(*loader, server.secretManager(), provider_factory);
   static auto* client_stats_store = new Stats::TestIsolatedStoreImpl();
   return Network::TransportSocketFactoryPtr{
       new Ssl::ClientSslSocketFactory(std::move(cfg), context_manager, *client_stats_store)};
