@@ -341,9 +341,12 @@ Stats::ScopePtr generateStatsScope(const envoy::api::v2::Cluster& config, Stats:
                                                           : std::string(config.alt_stat_name())));
 }
 
-Network::TransportSocketFactoryPtr createTransportSocketFactory(
-    const envoy::api::v2::Cluster& config,
-    Server::Configuration::TransportSocketFactoryContext& factory_context) {
+Network::TransportSocketFactoryPtr
+createTransportSocketFactory(const envoy::api::v2::Cluster& config,
+                             Server::Configuration::TransportSocketFactoryContext& factory_context,
+                             Init::Manager& init_manager) {
+  factory_context.createDynamicTlsCertificateSecretProviderContext(init_manager);
+
   // If the cluster config doesn't have a transport socket configured, override with the default
   // transport socket implementation based on the tls_context. We copy by value first then override
   // if necessary.
@@ -457,7 +460,7 @@ ClusterImplBase::ClusterImplBase(
     Server::Configuration::TransportSocketFactoryContext& factory_context,
     Stats::ScopePtr&& stats_scope, bool added_via_api)
     : runtime_(runtime) {
-  auto socket_factory = createTransportSocketFactory(cluster, factory_context);
+  auto socket_factory = createTransportSocketFactory(cluster, factory_context, init_manager_);
   info_ = std::make_unique<ClusterInfoImpl>(cluster, factory_context.clusterManager().bindConfig(),
                                             runtime, std::move(socket_factory),
                                             std::move(stats_scope), added_via_api);
@@ -520,6 +523,10 @@ void ClusterImplBase::onPreInitComplete() {
   }
   initialization_started_ = true;
 
+  init_manager_.initialize([this]() { onInitDone(); });
+}
+
+void ClusterImplBase::onInitDone() {
   if (health_checker_ && pending_initialize_health_checks_ == 0) {
     for (auto& host_set : prioritySet().hostSetsPerPriority()) {
       pending_initialize_health_checks_ += host_set->hosts().size();

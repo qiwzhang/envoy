@@ -2,6 +2,8 @@
 
 #include "envoy/server/transport_socket_config.h"
 
+#include "common/secret/dynamic_secret_provider_context_impl.h"
+
 namespace Envoy {
 namespace Server {
 namespace Configuration {
@@ -25,10 +27,6 @@ public:
 
   Upstream::ClusterManager& clusterManager() override { return cluster_manager_; }
 
-  Secret::SecretManager& secretManager() override {
-    return cluster_manager_.clusterManagerFactory().secretManager();
-  }
-
   const LocalInfo::LocalInfo& localInfo() override { return local_info_; }
 
   Event::Dispatcher& dispatcher() override { return dispatcher_; }
@@ -36,6 +34,17 @@ public:
   Envoy::Runtime::RandomGenerator& random() override { return random_; }
 
   Stats::Store& stats() override { return stats_; }
+
+  void createDynamicTlsCertificateSecretProviderContext(Init::Manager& init_manager) override {
+    secret_provider_context_ =
+        std::make_unique<Secret::DynamicTlsCertificateSecretProviderContextImpl>(
+            local_info_, dispatcher_, cluster_manager_, random_, stats_, init_manager);
+  }
+
+  Secret::DynamicTlsCertificateSecretProviderContext&
+  dynamicTlsCertificateSecretProviderContext() override {
+    return *secret_provider_context_;
+  }
 
 private:
   Ssl::ContextManager& context_manager_;
@@ -45,6 +54,7 @@ private:
   Event::Dispatcher& dispatcher_;
   Envoy::Runtime::RandomGenerator& random_;
   Stats::Store& stats_;
+  Secret::DynamicTlsCertificateSecretProviderContextPtr secret_provider_context_;
 };
 
 } // namespace Configuration

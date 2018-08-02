@@ -3,6 +3,7 @@
 #include <string>
 
 #include "envoy/event/dispatcher.h"
+#include "envoy/init/init.h"
 #include "envoy/local_info/local_info.h"
 #include "envoy/network/transport_socket.h"
 #include "envoy/runtime/runtime.h"
@@ -14,6 +15,10 @@
 #include "common/protobuf/protobuf.h"
 
 namespace Envoy {
+namespace Secret {
+class DynamicTlsCertificateSecretProviderContext;
+}
+
 namespace Server {
 namespace Configuration {
 
@@ -33,11 +38,6 @@ public:
    * @return Stats::Scope& the transport socket's stats scope.
    */
   virtual Stats::Scope& statsScope() const PURE;
-
-  /**
-   * Return the instance of secret manager.
-   */
-  virtual Secret::SecretManager& secretManager() PURE;
 
   /**
    * @return the instance of ClusterManager.
@@ -63,6 +63,17 @@ public:
    * @return the server-wide stats store.
    */
   virtual Stats::Store& stats() PURE;
+
+  /**
+   * @param init_manager a init_manager for initializing dynamic secret provider.
+   */
+  virtual void createDynamicTlsCertificateSecretProviderContext(Init::Manager& init_manager) PURE;
+
+  /**
+   * @return the instance of dynamic tls certificate secret provider context.
+   */
+  virtual Secret::DynamicTlsCertificateSecretProviderContext&
+  dynamicTlsCertificateSecretProviderContext() PURE;
 };
 
 class TransportSocketConfigFactory {
