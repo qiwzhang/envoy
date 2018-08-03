@@ -356,6 +356,5 @@ envoy_cc_library(
     hdrs = ["transport_socket_config_impl.h"],
     deps = [
         "//include/envoy/server:transport_socket_config_interface",
-        "//source/common/secret:dynamic_secret_provider_context_impl_lib",
     ],
 )

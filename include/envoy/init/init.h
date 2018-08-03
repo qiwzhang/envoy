@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include "envoy/common/pure.h"
 
@@ -35,6 +36,8 @@ public:
    */
   virtual void registerTarget(Target& target) PURE;
 };
+
+typedef std::unique_ptr<Manager> InitManagerPtr;
 
 } // namespace Init
 } // namespace Envoy

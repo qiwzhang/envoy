@@ -38,11 +38,3 @@ envoy_cc_library(
         "//source/common/ssl:tls_certificate_config_impl_lib",
     ],
 )
-
-envoy_cc_library(
-    name = "dynamic_secret_provider_context_impl_lib",
-    hdrs = ["dynamic_secret_provider_context_impl.h"],
-    deps = [
-        "//include/envoy/secret:dynamic_secret_provider_interface",
-    ],
-)

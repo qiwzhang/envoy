@@ -345,7 +345,7 @@ Network::TransportSocketFactoryPtr
 createTransportSocketFactory(const envoy::api::v2::Cluster& config,
                              Server::Configuration::TransportSocketFactoryContext& factory_context,
                              Init::Manager& init_manager) {
-  factory_context.createDynamicTlsCertificateSecretProviderContext(init_manager);
+  factory_context.setInitManager(init_manager);
 
   // If the cluster config doesn't have a transport socket configured, override with the default
   // transport socket implementation based on the tls_context. We copy by value first then override

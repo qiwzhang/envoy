@@ -42,6 +42,7 @@ envoy_cc_library(
         "//source/common/config:tls_context_json_lib",
         "//source/common/json:json_loader_lib",
         "//source/common/protobuf:utility_lib",
+        "//source/server:transport_socket_config_lib",
         "@envoy_api//envoy/api/v2/auth:cert_cc",
     ],
 )

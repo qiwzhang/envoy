@@ -18,7 +18,7 @@ namespace {
 
 std::string readConfig(
     const envoy::api::v2::auth::CommonTlsContext& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context,
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context,
     const std::function<std::string(const envoy::api::v2::auth::TlsCertificate& tls_certificate)>&
         read_inline_config,
     const std::function<std::string(const Ssl::TlsCertificateConfig& secret)>& read_secret) {
@@ -57,7 +57,7 @@ const std::string ContextConfigImpl::DEFAULT_ECDH_CURVES = "X25519:P-256";
 
 ContextConfigImpl::ContextConfigImpl(
     const envoy::api::v2::auth::CommonTlsContext& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context)
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context)
     : alpn_protocols_(RepeatedPtrUtil::join(config.alpn_protocols(), ",")),
       alt_alpn_protocols_(config.deprecated_v1().alt_alpn_protocols()),
       cipher_suites_(StringUtil::nonEmptyStringOrDefault(
@@ -143,7 +143,7 @@ unsigned ContextConfigImpl::tlsVersionFromProto(
 
 ClientContextConfigImpl::ClientContextConfigImpl(
     const envoy::api::v2::auth::UpstreamTlsContext& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context)
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context)
     : ContextConfigImpl(config.common_tls_context(), secret_provider_context),
       server_name_indication_(config.sni()), allow_renegotiation_(config.allow_renegotiation()) {
   // BoringSSL treats this as a C string, so embedded NULL characters will not
@@ -160,7 +160,7 @@ ClientContextConfigImpl::ClientContextConfigImpl(
 
 ClientContextConfigImpl::ClientContextConfigImpl(
     const Json::Object& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context)
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context)
     : ClientContextConfigImpl(
           [&config] {
             envoy::api::v2::auth::UpstreamTlsContext upstream_tls_context;
@@ -171,7 +171,7 @@ ClientContextConfigImpl::ClientContextConfigImpl(
 
 ServerContextConfigImpl::ServerContextConfigImpl(
     const envoy::api::v2::auth::DownstreamTlsContext& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context)
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context)
     : ContextConfigImpl(config.common_tls_context(), secret_provider_context),
       require_client_certificate_(
           PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, require_client_certificate, false)),
@@ -205,7 +205,7 @@ ServerContextConfigImpl::ServerContextConfigImpl(
 
 ServerContextConfigImpl::ServerContextConfigImpl(
     const Json::Object& config,
-    Secret::DynamicTlsCertificateSecretProviderContext& secret_provider_context)
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context)
     : ServerContextConfigImpl(
           [&config] {
             envoy::api::v2::auth::DownstreamTlsContext downstream_tls_context;

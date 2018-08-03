@@ -18,13 +18,7 @@ envoy_cc_library(
     hdrs = ["dynamic_secret_provider.h"],
     deps = [
         "secret_callbacks_interface",
-        "//include/envoy/event:dispatcher_interface",
-        "//include/envoy/init:init_interface",
-        "//include/envoy/local_info:local_info_interface",
-        "//include/envoy/runtime:runtime_interface",
         "//include/envoy/ssl:tls_certificate_config_interface",
-        "//include/envoy/stats:stats_interface",
-        "//include/envoy/upstream:cluster_manager_interface",
     ],
 )
 

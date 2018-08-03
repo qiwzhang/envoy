@@ -40,6 +40,11 @@ public:
   virtual Stats::Scope& statsScope() const PURE;
 
   /**
+   * Return the instance of secret manager.
+   */
+  virtual Secret::SecretManager& secretManager() PURE;
+
+  /**
    * @return the instance of ClusterManager.
    */
   virtual Upstream::ClusterManager& clusterManager() PURE;
@@ -65,15 +70,15 @@ public:
   virtual Stats::Store& stats() PURE;
 
   /**
-   * @param init_manager a init_manager for initializing dynamic secret provider.
+   * Pass an init manager to register dynamic secret provider.
+   * @param init_manager instance of init manager.
    */
-  virtual void createDynamicTlsCertificateSecretProviderContext(Init::Manager& init_manager) PURE;
+  virtual void setInitManager(Init::Manager& init_manager) PURE;
 
   /**
-   * @return the instance of dynamic tls certificate secret provider context.
+   * @return the instance of init manager.
    */
-  virtual Secret::DynamicTlsCertificateSecretProviderContext&
-  dynamicTlsCertificateSecretProviderContext() PURE;
+  virtual Init::Manager& initManager() PURE;
 };
 
 class TransportSocketConfigFactory {
