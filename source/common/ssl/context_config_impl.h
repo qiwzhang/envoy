@@ -67,16 +67,15 @@ public:
 
 protected:
   ContextConfigImpl(const envoy::api::v2::auth::CommonTlsContext& config,
-                    Server::Configuration::TransportSocketFactoryContext& secret_provider_context);
+                    Server::Configuration::TransportSocketFactoryContext& factory_context);
 
 private:
   static unsigned
   tlsVersionFromProto(const envoy::api::v2::auth::TlsParameters_TlsProtocol& version,
                       unsigned default_version);
 
-  void readCertChainConfig(
-      const envoy::api::v2::auth::CommonTlsContext& config,
-      Server::Configuration::TransportSocketFactoryContext& secret_provider_context);
+  void readCertChainConfig(const envoy::api::v2::auth::CommonTlsContext& config,
+                           Server::Configuration::TransportSocketFactoryContext& factory_context);
 
   static const std::string DEFAULT_CIPHER_SUITES;
   static const std::string DEFAULT_ECDH_CURVES;

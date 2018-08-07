@@ -89,8 +89,6 @@ private:
   ClientContextSharedPtr ssl_ctx_;
 };
 
-typedef std::unique_ptr<ClientContextConfig> ClientContextConfigPtr;
-
 class ServerSslSocketFactory : public Network::TransportSocketFactory,
                                public Secret::SecretCallbacks,
                                Logger::Loggable<Logger::Id::config> {
@@ -112,8 +110,6 @@ private:
   const std::vector<std::string> server_names_;
   ServerContextSharedPtr ssl_ctx_;
 };
-
-typedef std::unique_ptr<ServerContextConfig> ServerContextConfigPtr;
 
 } // namespace Ssl
 } // namespace Envoy

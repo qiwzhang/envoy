@@ -25,12 +25,6 @@
 
 namespace Envoy {
 
-// namespace Secret{
-//
-// class SecretManager{};
-//
-//} // namespace Secret
-
 namespace Upstream {
 
 /**

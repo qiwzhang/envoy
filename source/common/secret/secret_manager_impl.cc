@@ -2,6 +2,7 @@
 
 #include "envoy/common/exception.h"
 
+#include "common/common/assert.h"
 #include "common/secret/sds_api.h"
 #include "common/ssl/tls_certificate_config_impl.h"
 
@@ -36,27 +37,14 @@ void SecretManagerImpl::removeDeletedSecretProvider() {
   }
 }
 
-namespace {
-
-std::string getDynamicTlsCertificateSecretProviderHash(
-    const envoy::api::v2::core::ConfigSource& sds_config_source, const std::string& config_name) {
-  auto hash = MessageUtil::hash(sds_config_source);
-  return std::to_string(hash) + config_name;
-}
-
-} // namespace
-
 DynamicTlsCertificateSecretProviderSharedPtr SecretManagerImpl::findOrCreateDynamicSecretProvider(
     const envoy::api::v2::core::ConfigSource& sds_config_source, const std::string& config_name,
     Server::Configuration::TransportSocketFactoryContext& secret_provider_context) {
-  std::string map_key = getDynamicTlsCertificateSecretProviderHash(sds_config_source, config_name);
+  std::string map_key = std::to_string(MessageUtil::hash(sds_config_source)) + config_name;
 
   auto secret_provider = dynamic_secret_providers_[map_key].lock();
   if (!secret_provider) {
-    if (secret_provider_context.initManager() == nullptr) {
-      throw EnvoyException(fmt::format(
-          "Fail to create secret provider for secret {}, init manager is nullptr", config_name));
-    }
+    ASSERT(secret_provider_context.initManager() != nullptr);
     secret_provider = std::make_shared<SdsApi>(
         secret_provider_context.localInfo(), secret_provider_context.dispatcher(),
         secret_provider_context.random(), secret_provider_context.stats(),

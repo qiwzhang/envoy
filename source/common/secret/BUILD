@@ -16,6 +16,7 @@ envoy_cc_library(
         ":sds_api_lib",
         "//include/envoy/secret:secret_manager_interface",
         "//include/envoy/server:transport_socket_config_interface",
+        "//source/common/common:assert_lib",
         "//source/common/common:minimal_logger_lib",
         "//source/common/ssl:tls_certificate_config_impl_lib",
         "@envoy_api//envoy/api/v2/auth:cert_cc",
