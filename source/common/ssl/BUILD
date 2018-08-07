@@ -35,6 +35,7 @@ envoy_cc_library(
     ],
     deps = [
         "//include/envoy/secret:dynamic_secret_provider_interface",
+        "//include/envoy/server:transport_socket_config_interface",
         "//include/envoy/ssl:context_config_interface",
         "//source/common/common:assert_lib",
         "//source/common/common:empty_string",
@@ -42,7 +43,6 @@ envoy_cc_library(
         "//source/common/config:tls_context_json_lib",
         "//source/common/json:json_loader_lib",
         "//source/common/protobuf:utility_lib",
-        "//source/server:transport_socket_config_lib",
         "@envoy_api//envoy/api/v2/auth:cert_cc",
     ],
 )

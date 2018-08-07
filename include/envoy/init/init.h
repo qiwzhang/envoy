@@ -37,7 +37,5 @@ public:
   virtual void registerTarget(Target& target) PURE;
 };
 
-typedef std::unique_ptr<Manager> InitManagerPtr;
-
 } // namespace Init
 } // namespace Envoy

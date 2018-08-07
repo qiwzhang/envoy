@@ -76,9 +76,10 @@ public:
   virtual void setInitManager(Init::Manager& init_manager) PURE;
 
   /**
-   * @return the instance of init manager.
+   * @return a pointer pointing to the instance of an init manager, or nullptr
+   * if not set.
    */
-  virtual Init::Manager& initManager() PURE;
+  virtual Init::Manager* initManager() PURE;
 };
 
 class TransportSocketConfigFactory {

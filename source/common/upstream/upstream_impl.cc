@@ -143,9 +143,14 @@ HostImpl::createConnection(Event::Dispatcher& dispatcher, const ClusterInfo& clu
     connection_options = options;
   }
 
+  auto transport_socket = cluster.transportSocketFactory().createTransportSocket();
+  if (!transport_socket) {
+    cluster.stats().upstream_cx_connect_fail_by_sds_.inc();
+    return nullptr;
+  }
+
   Network::ClientConnectionPtr connection = dispatcher.createClientConnection(
-      address, cluster.sourceAddress(), cluster.transportSocketFactory().createTransportSocket(),
-      connection_options);
+      address, cluster.sourceAddress(), std::move(transport_socket), connection_options);
   connection->setBufferLimits(cluster.perConnectionBufferLimitBytes());
   return connection;
 }

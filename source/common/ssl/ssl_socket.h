@@ -5,6 +5,7 @@
 
 #include "envoy/network/connection.h"
 #include "envoy/network/transport_socket.h"
+#include "envoy/secret/secret_callbacks.h"
 
 #include "common/common/logger.h"
 #include "common/ssl/context_impl.h"
@@ -67,13 +68,19 @@ private:
   mutable std::string cached_url_encoded_pem_encoded_peer_certificate_;
 };
 
-class ClientSslSocketFactory : public Network::TransportSocketFactory {
+class ClientSslSocketFactory : public Network::TransportSocketFactory,
+                               public Secret::SecretCallbacks,
+                               Logger::Loggable<Logger::Id::config> {
 public:
   ClientSslSocketFactory(ClientContextConfigPtr config, Ssl::ContextManager& manager,
                          Stats::Scope& stats_scope);
+  virtual ~ClientSslSocketFactory();
 
   Network::TransportSocketPtr createTransportSocket() const override;
   bool implementsSecureTransport() const override;
+
+  // Secret::SecretCallbacks
+  void onAddOrUpdateSecret() override;
 
 private:
   Ssl::ContextManager& manager_;
@@ -82,13 +89,21 @@ private:
   ClientContextSharedPtr ssl_ctx_;
 };
 
-class ServerSslSocketFactory : public Network::TransportSocketFactory {
+typedef std::unique_ptr<ClientContextConfig> ClientContextConfigPtr;
+
+class ServerSslSocketFactory : public Network::TransportSocketFactory,
+                               public Secret::SecretCallbacks,
+                               Logger::Loggable<Logger::Id::config> {
 public:
   ServerSslSocketFactory(ServerContextConfigPtr config, Ssl::ContextManager& manager,
                          Stats::Scope& stats_scope, const std::vector<std::string>& server_names);
+  virtual ~ServerSslSocketFactory();
 
   Network::TransportSocketPtr createTransportSocket() const override;
   bool implementsSecureTransport() const override;
+
+  // Secret::SecretCallbacks
+  void onAddOrUpdateSecret() override;
 
 private:
   Ssl::ContextManager& manager_;
@@ -97,6 +112,8 @@ private:
   const std::vector<std::string> server_names_;
   ServerContextSharedPtr ssl_ctx_;
 };
+
+typedef std::unique_ptr<ServerContextConfig> ServerContextConfigPtr;
 
 } // namespace Ssl
 } // namespace Envoy

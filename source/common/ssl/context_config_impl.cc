@@ -14,31 +14,6 @@
 namespace Envoy {
 namespace Ssl {
 
-namespace {
-
-std::string readConfig(
-    const envoy::api::v2::auth::CommonTlsContext& config,
-    Server::Configuration::TransportSocketFactoryContext& secret_provider_context,
-    const std::function<std::string(const envoy::api::v2::auth::TlsCertificate& tls_certificate)>&
-        read_inline_config,
-    const std::function<std::string(const Ssl::TlsCertificateConfig& secret)>& read_secret) {
-  if (!config.tls_certificates().empty()) {
-    return read_inline_config(config.tls_certificates()[0]);
-  } else if (!config.tls_certificate_sds_secret_configs().empty()) {
-    auto name = config.tls_certificate_sds_secret_configs()[0].name();
-    const Ssl::TlsCertificateConfig* secret =
-        secret_provider_context.secretManager().findTlsCertificate(name);
-    if (!secret) {
-      throw EnvoyException(fmt::format("Static secret is not defined: {}", name));
-    }
-    return read_secret(*secret);
-  } else {
-    return EMPTY_STRING;
-  }
-}
-
-} // namespace
-
 const std::string ContextConfigImpl::DEFAULT_CIPHER_SUITES =
     "[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:"
     "[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]:"
@@ -70,26 +45,10 @@ ContextConfigImpl::ContextConfigImpl(
           Config::DataSource::read(config.validation_context().crl(), true)),
       certificate_revocation_list_path_(
           Config::DataSource::getPath(config.validation_context().crl())),
-      cert_chain_(readConfig(
-          config, secret_provider_context,
-          [](const envoy::api::v2::auth::TlsCertificate& tls_certificate) -> std::string {
-            return Config::DataSource::read(tls_certificate.certificate_chain(), true);
-          },
-          [](const Ssl::TlsCertificateConfig& secret) -> std::string {
-            return secret.certificateChain();
-          })),
       cert_chain_path_(
           config.tls_certificates().empty()
               ? ""
               : Config::DataSource::getPath(config.tls_certificates()[0].certificate_chain())),
-      private_key_(readConfig(
-          config, secret_provider_context,
-          [](const envoy::api::v2::auth::TlsCertificate& tls_certificate) -> std::string {
-            return Config::DataSource::read(tls_certificate.private_key(), true);
-          },
-          [](const Ssl::TlsCertificateConfig& secret) -> std::string {
-            return secret.privateKey();
-          })),
       private_key_path_(
           config.tls_certificates().empty()
               ? ""
@@ -105,6 +64,8 @@ ContextConfigImpl::ContextConfigImpl(
           tlsVersionFromProto(config.tls_params().tls_minimum_protocol_version(), TLS1_VERSION)),
       max_protocol_version_(
           tlsVersionFromProto(config.tls_params().tls_maximum_protocol_version(), TLS1_2_VERSION)) {
+  readCertChainConfig(config, secret_provider_context);
+
   if (ca_cert_.empty()) {
     if (!certificate_revocation_list_.empty()) {
       throw EnvoyException(fmt::format("Failed to load CRL from {} without trusted CA",
@@ -117,6 +78,36 @@ ContextConfigImpl::ContextConfigImpl(
     if (allow_expired_certificate_) {
       throw EnvoyException(
           fmt::format("Certificate validity period is always ignored without trusted CA"));
+    }
+  }
+}
+
+void ContextConfigImpl::readCertChainConfig(
+    const envoy::api::v2::auth::CommonTlsContext& config,
+    Server::Configuration::TransportSocketFactoryContext& secret_provider_context) {
+  if (!config.tls_certificates().empty()) {
+    cert_chain_ = Config::DataSource::read(config.tls_certificates()[0].certificate_chain(), true);
+    private_key_ = Config::DataSource::read(config.tls_certificates()[0].private_key(), true);
+    return;
+  }
+  if (!config.tls_certificate_sds_secret_configs().empty()) {
+    auto secret_name = config.tls_certificate_sds_secret_configs()[0].name();
+    if (!config.tls_certificate_sds_secret_configs()[0].has_sds_config()) {
+      // static secret
+      const auto secret =
+          secret_provider_context.secretManager().findStaticTlsCertificate(secret_name);
+      if (secret) {
+        cert_chain_ = secret->certificateChain();
+        private_key_ = secret->privateKey();
+        return;
+      } else {
+        throw EnvoyException(fmt::format("Unknown static secret: {}", secret_name));
+      }
+    } else {
+      secret_provider_ = secret_provider_context.secretManager().findOrCreateDynamicSecretProvider(
+          config.tls_certificate_sds_secret_configs()[0].sds_config(), secret_name,
+          secret_provider_context);
+      return;
     }
   }
 }
@@ -139,6 +130,20 @@ unsigned ContextConfigImpl::tlsVersionFromProto(
   }
 
   NOT_REACHED_GCOVR_EXCL_LINE;
+}
+
+const std::string& ContextConfigImpl::certChain() const {
+  if (secret_provider_ && secret_provider_->secret()) {
+    return secret_provider_->secret()->certificateChain();
+  }
+  return cert_chain_;
+}
+
+const std::string& ContextConfigImpl::privateKey() const {
+  if (secret_provider_ && secret_provider_->secret()) {
+    return secret_provider_->secret()->privateKey();
+  }
+  return private_key_;
 }
 
 ClientContextConfigImpl::ClientContextConfigImpl(

@@ -24,6 +24,13 @@
 #include "envoy/upstream/upstream.h"
 
 namespace Envoy {
+
+// namespace Secret{
+//
+// class SecretManager{};
+//
+//} // namespace Secret
+
 namespace Upstream {
 
 /**
