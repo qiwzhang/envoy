@@ -13,6 +13,7 @@
 #include "test/mocks/init/mocks.h"
 #include "test/mocks/runtime/mocks.h"
 #include "test/mocks/secret/mocks.h"
+#include "test/mocks/server/mocks.h"
 #include "test/test_common/network_utility.h"
 #include "test/test_common/utility.h"
 
@@ -66,8 +67,7 @@ public:
 
     registerTestServerPorts({"http"});
 
-    client_ssl_ctx_ =
-        createClientSslTransportSocketFactory(false, false, context_manager_, secret_manager_);
+    client_ssl_ctx_ = createClientSslTransportSocketFactory(false, false, context_manager_);
   }
 
   void TearDown() override {
@@ -86,7 +86,6 @@ public:
 private:
   Runtime::MockLoader runtime_;
   Ssl::ContextManagerImpl context_manager_{runtime_};
-  Secret::MockSecretManager secret_manager_;
 
   Network::TransportSocketFactoryPtr client_ssl_ctx_;
 };
@@ -166,7 +165,8 @@ public:
     tls_certificate->mutable_private_key()->set_filename(
         TestEnvironment::runfilesPath("/test/config/integration/certs/serverkey.pem"));
 
-    auto cfg = std::make_unique<Ssl::ServerContextConfigImpl>(tls_context, secret_manager_);
+    NiceMock<Server::Configuration::MockTransportSocketFactoryContext> mock_factory_ctx;
+    auto cfg = std::make_unique<Ssl::ServerContextConfigImpl>(tls_context, mock_factory_ctx);
 
     static Stats::Scope* upstream_stats_store = new Stats::TestIsolatedStoreImpl();
     return std::make_unique<Ssl::ServerSslSocketFactory>(
@@ -176,7 +176,6 @@ public:
 private:
   Runtime::MockLoader runtime_;
   Ssl::ContextManagerImpl context_manager_{runtime_};
-  Secret::MockSecretManager secret_manager_;
 };
 
 INSTANTIATE_TEST_CASE_P(IpVersions, SdsStaticUpstreamIntegrationTest,
