@@ -9,7 +9,7 @@ namespace Envoy {
 namespace Secret {
 
 /**
- * Callbacks invoked by a secret manager.
+ * Callbacks invoked by a dynamic secret provider.
  */
 class SecretCallbacks {
 public:

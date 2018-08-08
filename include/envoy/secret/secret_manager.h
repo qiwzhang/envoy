@@ -49,6 +49,12 @@ public:
   virtual DynamicTlsCertificateSecretProviderSharedPtr findOrCreateDynamicSecretProvider(
       const envoy::api::v2::core::ConfigSource& config_source, const std::string& config_name,
       Server::Configuration::TransportSocketFactoryContext& secret_provider_context) PURE;
+
+  /**
+   * Unregister a secret provider that is already deleted.
+   * @param secret_provider_id hash id of a secret provider that is deleted.
+   */
+  virtual void removeDeletedSecretProvider(const std::string& secret_provider_id) PURE;
 };
 
 } // namespace Secret

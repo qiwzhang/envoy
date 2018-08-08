@@ -20,9 +20,9 @@ public:
       const envoy::api::v2::core::ConfigSource& config_source, const std::string& config_name,
       Server::Configuration::TransportSocketFactoryContext& secret_provider_context) override;
 
-private:
-  void removeDeletedSecretProvider();
+  void removeDeletedSecretProvider(const std::string& secret_provider_id) override;
 
+private:
   // Manages pairs of secret name and Ssl::TlsCertificateConfig.
   std::unordered_map<std::string, Ssl::TlsCertificateConfigPtr> static_tls_certificate_secrets_;
 

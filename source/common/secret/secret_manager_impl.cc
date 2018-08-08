@@ -27,13 +27,10 @@ SecretManagerImpl::findStaticTlsCertificate(const std::string& name) const {
   return (secret != static_tls_certificate_secrets_.end()) ? secret->second.get() : nullptr;
 }
 
-void SecretManagerImpl::removeDeletedSecretProvider() {
-  for (auto it = dynamic_secret_providers_.begin(); it != dynamic_secret_providers_.end();) {
-    if (it->second.expired()) {
-      it = dynamic_secret_providers_.erase(it);
-    } else {
-      ++it;
-    }
+void SecretManagerImpl::removeDeletedSecretProvider(const std::string& secret_provider_id) {
+  auto secret_provider = dynamic_secret_providers_.find(secret_provider_id);
+  if (secret_provider != dynamic_secret_providers_.end()) {
+    dynamic_secret_providers_.erase(secret_provider);
   }
 }
 
@@ -49,10 +46,9 @@ DynamicTlsCertificateSecretProviderSharedPtr SecretManagerImpl::findOrCreateDyna
         secret_provider_context.localInfo(), secret_provider_context.dispatcher(),
         secret_provider_context.random(), secret_provider_context.stats(),
         secret_provider_context.clusterManager(), *secret_provider_context.initManager(),
-        sds_config_source, config_name);
+        sds_config_source, config_name, *this);
     dynamic_secret_providers_[map_key] = secret_provider;
   }
-  removeDeletedSecretProvider();
 
   return secret_provider;
 }

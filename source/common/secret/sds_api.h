@@ -11,6 +11,7 @@
 #include "envoy/runtime/runtime.h"
 #include "envoy/secret/dynamic_secret_provider.h"
 #include "envoy/secret/secret_callbacks.h"
+#include "envoy/secret/secret_manager.h"
 #include "envoy/stats/stats.h"
 #include "envoy/upstream/cluster_manager.h"
 
@@ -27,7 +28,10 @@ public:
   SdsApi(const LocalInfo::LocalInfo& local_info, Event::Dispatcher& dispatcher,
          Runtime::RandomGenerator& random, Stats::Store& stats,
          Upstream::ClusterManager& cluster_manager, Init::Manager& init_manager,
-         const envoy::api::v2::core::ConfigSource& sds_config, std::string sds_config_name);
+         const envoy::api::v2::core::ConfigSource& sds_config, std::string sds_config_name,
+         Secret::SecretManager& secret_manager);
+
+  ~SdsApi() override;
 
   // Init::Target
   void initialize(std::function<void()> callback) override;
@@ -66,6 +70,8 @@ private:
   const std::string sds_config_name_;
 
   uint64_t secret_hash_;
+  const std::string id_;
+  Secret::SecretManager& secret_manager_;
   Ssl::TlsCertificateConfigPtr tls_certificate_secrets_;
   std::list<SecretCallbacks*> update_callbacks_;
 };
