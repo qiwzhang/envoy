@@ -46,7 +46,7 @@ DynamicTlsCertificateSecretProviderSharedPtr SecretManagerImpl::findOrCreateDyna
         secret_provider_context.localInfo(), secret_provider_context.dispatcher(),
         secret_provider_context.random(), secret_provider_context.stats(),
         secret_provider_context.clusterManager(), *secret_provider_context.initManager(),
-        sds_config_source, config_name, *this);
+        sds_config_source, config_name, map_key, *this);
     dynamic_secret_providers_[map_key] = secret_provider;
   }
 

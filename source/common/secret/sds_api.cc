@@ -16,11 +16,10 @@ SdsApi::SdsApi(const LocalInfo::LocalInfo& local_info, Event::Dispatcher& dispat
                Runtime::RandomGenerator& random, Stats::Store& stats,
                Upstream::ClusterManager& cluster_manager, Init::Manager& init_manager,
                const envoy::api::v2::core::ConfigSource& sds_config, std::string sds_config_name,
-               Secret::SecretManager& secret_manager)
+               const std::string id, Secret::SecretManager& secret_manager)
     : local_info_(local_info), dispatcher_(dispatcher), random_(random), stats_(stats),
       cluster_manager_(cluster_manager), sds_config_(sds_config), sds_config_name_(sds_config_name),
-      secret_hash_(0), id_(std::to_string(MessageUtil::hash(sds_config)) + sds_config_name),
-      secret_manager_(secret_manager) {
+      secret_hash_(0), id_(id), secret_manager_(secret_manager) {
   // TODO(JimmyCYJ): Implement chained_init_manager, so that multiple init_manager
   // can be chained together to behave as one init_manager. In that way, we let
   // two listeners which share same SdsApi to register at separate init managers, and

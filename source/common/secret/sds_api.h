@@ -29,7 +29,7 @@ public:
          Runtime::RandomGenerator& random, Stats::Store& stats,
          Upstream::ClusterManager& cluster_manager, Init::Manager& init_manager,
          const envoy::api::v2::core::ConfigSource& sds_config, std::string sds_config_name,
-         Secret::SecretManager& secret_manager);
+         const std::string id, Secret::SecretManager& secret_manager);
 
   ~SdsApi() override;
 
